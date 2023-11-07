@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 
+	"github.com/Juxsta/sbclient/seedbox-service/database"
 	qbt "github.com/Juxsta/sbclient/seedbox-service/qbittorrent"
 	qbtp "github.com/Juxsta/sbclient/seedbox-service/qbittorrentproxy"
+	"github.com/Juxsta/sbclient/seedbox-service/session"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers/gorillamux"
 	"github.com/jinzhu/gorm"
@@ -17,18 +20,22 @@ import (
 type MyServer struct {
 	db     *gorm.DB
 	client qbt.Client
+	store  *session.Store
 }
 
 func main() {
 	e := echo.New()
 
-	db := initDB()
+	db := database.InitDB()
 	defer db.Close()
 
-	client := qbt.NewClient("xn-1cePhXJ2Jrf4ijMY8eC_bhZcN1ZxeDRX5IWx_plsnZTFqrvKtmRb8Y5jKNl-c")
+	client := qbt.NewClient("")
+	store := session.NewSessionStore("localhost:6379", "", 0)
+
 	server := &MyServer{
 		db:     db,
 		client: *client,
+		store:  store,
 	}
 
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -62,26 +69,34 @@ func main() {
 				return c.String(http.StatusBadRequest, err.Error())
 			}
 
-			// For valid requests, add path params and then continue.
 			requestValidationInput := &openapi3filter.RequestValidationInput{
 				Request:    httpReq,
 				PathParams: pathParams,
 				Route:      route,
 				Options: &openapi3filter.Options{
 					AuthenticationFunc: func(c context.Context, input *openapi3filter.AuthenticationInput) error {
-						// Your authentication logic here
-						// For example:
-						// cookie, err := input.RequestValidationInput.Request.Cookie("SID")
-						// if err != nil || !isValidSessionID(cookie.Value) {
-						// 	return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
-						// }
-
+						cookie, err := input.RequestValidationInput.Request.Cookie("SID")
+						sid, err := store.GetSession(cookie)
+						if sid == "" || err != nil {
+							return &ErrAuthenticationFailed{
+								errors.New("unauthorized"),
+							}
+						}
 						return nil
 					},
 				},
 			}
 
-			if err := openapi3filter.ValidateRequest(c.Request().Context(), requestValidationInput); err != nil {
+			err = openapi3filter.ValidateRequest(c.Request().Context(), requestValidationInput)
+			if err != nil {
+				if secErr, ok := err.(*openapi3filter.SecurityRequirementsError); ok {
+					for _, subErr := range secErr.Errors {
+						if _, ok := subErr.(*ErrAuthenticationFailed); ok {
+							return c.String(http.StatusForbidden, "Forbidden")
+						}
+					}
+				}
+
 				return c.String(http.StatusBadRequest, err.Error())
 			}
 
@@ -97,6 +112,6 @@ func main() {
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
-func isValidSessionID(sessionID string) bool {
-	return true
+type ErrAuthenticationFailed struct {
+	error
 }

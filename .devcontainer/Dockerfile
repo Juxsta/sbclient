@@ -1,12 +1,22 @@
-# [Choice] Node.js version (use -bullseye variants on local arm64/Apple Silicon): 18, 16, 14, 18-bullseye, 16-bullseye, 14-bullseye, 18-buster, 16-buster, 14-buster
-ARG VARIANT=16
-FROM mcr.microsoft.com/devcontainers/javascript-node:0-${VARIANT}
+# Start from the official Golang image
+FROM golang:1.21-bullseye
 
-RUN su node -c "umask 0002 && npm install -g http-server @vue/cli @vue/cli-service-global"
-WORKDIR /app
+# Install sudo as root
+RUN apt-get update && apt-get install -y sudo
 
-EXPOSE 8080
+# Create a new vscode user with sudo access
+RUN adduser --disabled-password --gecos '' vscode && \
+    adduser vscode sudo && \
+    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# [Optional] Uncomment this section to install additional OS packages.
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install --no-install-recommends <your-package-list-here>
+# Use user vscode from now on
+USER vscode
+
+# Install Redis and Ngrok
+RUN sudo apt-get install -y redis-server wget unzip
+
+# Download and unzip ngrok
+RUN curl -JLO https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz && \
+    sudo tar xvzf ngrok-v3-stable-linux-amd64.tgz -C /usr/local/bin
+
+RUN go install -v golang.org/x/tools/gopls@latest && go install -v github.com/go-delve/delve/cmd/dlv@latest

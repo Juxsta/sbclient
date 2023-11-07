@@ -7,6 +7,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.16.2
 	github.com/getkin/kin-openapi v0.118.0
 	github.com/go-chi/chi v1.5.5
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-resty/resty/v2 v2.10.0
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
