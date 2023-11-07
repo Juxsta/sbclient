@@ -6,18 +6,30 @@ import (
 	"net/http"
 
 	qbt "github.com/Juxsta/sbclient/seedbox-service/qbittorrent"
+	qbtp "github.com/Juxsta/sbclient/seedbox-service/qbittorrentproxy"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers/gorillamux"
+	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-type MyServer struct{}
+type MyServer struct {
+	db     *gorm.DB
+	client qbt.Client
+}
 
 func main() {
 	e := echo.New()
 
-	server := &MyServer{}
+	db := initDB()
+	defer db.Close()
+
+	client := qbt.NewClient("xn-1cePhXJ2Jrf4ijMY8eC_bhZcN1ZxeDRX5IWx_plsnZTFqrvKtmRb8Y5jKNl-c")
+	server := &MyServer{
+		db:     db,
+		client: *client,
+	}
 
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -29,9 +41,9 @@ func main() {
 		}
 	})
 
-	qbt.RegisterHandlersWithBaseURL(e, server, "/api/v2")
+	qbtp.RegisterHandlersWithBaseURL(e, server, "/api/v2")
 
-	doc, err := qbt.GetSwagger()
+	doc, err := qbtp.GetSwagger()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -138,10 +138,6 @@ func (m *MyServer) SyncTorrentPeersPost(c echo.Context) error {
 	return c.String(http.StatusOK, "Not implemented yet")
 }
 
-func (m *MyServer) TorrentsAddPost(c echo.Context) error {
-	return c.String(http.StatusOK, "Not implemented yet")
-}
-
 func (m *MyServer) TorrentsAddPeersPost(c echo.Context) error {
 	return c.String(http.StatusOK, "Not implemented yet")
 }
@@ -158,19 +154,11 @@ func (m *MyServer) TorrentsBottomPrioPost(c echo.Context) error {
 	return c.String(http.StatusOK, "Not implemented yet")
 }
 
-func (m *MyServer) TorrentsCreateCategoryPost(c echo.Context) error {
-	return c.String(http.StatusOK, "Not implemented yet")
-}
-
 func (m *MyServer) TorrentsCreateTagsPost(c echo.Context) error {
 	return c.String(http.StatusOK, "Not implemented yet")
 }
 
 func (m *MyServer) TorrentsDecreasePrioPost(c echo.Context) error {
-	return c.String(http.StatusOK, "Not implemented yet")
-}
-
-func (m *MyServer) TorrentsDeletePost(c echo.Context) error {
 	return c.String(http.StatusOK, "Not implemented yet")
 }
 

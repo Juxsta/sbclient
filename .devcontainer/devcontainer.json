@@ -6,10 +6,8 @@
 	"image": "mcr.microsoft.com/devcontainers/go:1-1.21-bullseye",
 	"features": {
 		"ghcr.io/devcontainers-contrib/features/node-asdf:0": {},
-		"ghcr.io/devcontainers-contrib/features/protoc:1": {},
 		"ghcr.io/devcontainers-contrib/features/vue-cli:2": {},
-		"ghcr.io/marcozac/devcontainer-features/buf:1": {}
-
+		"ghcr.io/warrenbuckley/codespace-features/sqlite:1": {}
 	},
 		// Configure tool-specific properties.
 		"customizations": {
@@ -21,7 +19,8 @@
 					"octref.vetur",
 					"zxh404.vscode-proto3",
 					"GitHub.copilot",
-					"ms-vscode.makefile-tools"
+					"ms-vscode.makefile-tools",
+					"alexcvzz.vscode-sqlite"
 				]
 			}
 		},
@@ -33,7 +32,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest && go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest && curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo 'deb https://ngrok-agent.s3.amazonaws.com buster main' | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok"
+	"postCreateCommand": "curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo 'deb https://ngrok-agent.s3.amazonaws.com buster main' | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
